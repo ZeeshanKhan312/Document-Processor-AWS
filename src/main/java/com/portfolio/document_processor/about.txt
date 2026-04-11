@@ -1,0 +1,61 @@
+Project 1: Asynchronous Document Processing Pipeline
+The Scenario: You need a system where users can submit documents (like academic essays, study notes, or IT resumes), and the system automatically extracts metadata from them in the background without making the user wait.
+
+The Architecture:
+
+Spring Boot Backend (Compute): You build a REST API in Java Spring Boot. You can deploy this using AWS Elastic Beanstalk (which automatically provisions a free-tier eligible EC2 instance).
+
+S3 (Storage): When a user uploads a document via your Spring Boot API, the API generates a pre-signed URL or directly uploads the file to an S3 bucket.
+
+AWS Lambda (Event-Driven Processing): The moment the file lands in S3, it triggers an AWS Lambda function. The Lambda function reads the file, calculates the word count, extracts the file type, and notes the upload timestamp.
+
+DynamoDB (NoSQL Database): The Lambda function saves this extracted metadata into a DynamoDB table, updating the document's status from "Processing" to "Completed."
+
+CI/CD Pipeline: You set up a GitHub Actions workflow (or AWS CodePipeline). Every time you push Java code to your main branch, the pipeline builds the .jar file and automatically deploys the new version to Elastic Beanstalk.
+
+
+### **Sprint 1: The Core Backend & Storage**
+**Goal:** Establish the foundation. The user needs to be able to upload a file to your backend, which then securely stores it in the cloud.
+* **Tasks:**
+    * Scaffold a new Java Spring Boot application.
+    * Create a REST controller with an endpoint to accept `multipart/form-data` (file uploads).
+    * Create an AWS S3 bucket via the AWS Console.
+    * Create an IAM User with programmatic access and S3 permissions.
+    * Integrate the AWS Java SDK into the Spring Boot app to upload the received file to the S3 bucket.
+* **Beginner Time Estimate:** 10–15 hours.
+* **The Reality Check:** The Java routing will move quickly. You will spend most of this time fighting with IAM permissions and ensuring your AWS credentials are securely loaded into the Spring Boot environment (never hardcoded!).
+
+### **Sprint 2: The Event-Driven Processor**
+**Goal:** Automate the background work. The moment a file lands in S3, a function should wake up, read it, and process it.
+* **Tasks:**
+    * Write a basic AWS Lambda function (you can use Java, or optionally Node.js/Python if you want to write a lighter-weight function).
+    * Write the logic to extract metadata: file size, file type, word count (if it's a text document), and upload timestamp.
+    * Configure the S3 bucket to trigger this Lambda function automatically upon a `PUT` request (file creation).
+    * Assign the correct IAM Execution Role to the Lambda function so it has permission to read the S3 object.
+* **Beginner Time Estimate:** 12–18 hours.
+* **The Reality Check:** This is a high-value sprint. Mastering Lambda event triggers, understanding the JSON payload that S3 sends to Lambda, and configuring execution roles is critical hands-on practice, especially if you are targeting something like the DVA-C02 exam.
+
+### **Sprint 3: State Management & Database**
+**Goal:** Track the progress. The system needs to record that a file was processed so the user can query its status.
+* **Tasks:**
+    * Create a DynamoDB table (e.g., `DocumentMetadata`) with a smart Partition Key (like a unique Document ID).
+    * Update the Lambda function from Sprint 2 to write the extracted metadata into this DynamoDB table.
+    * Update the Spring Boot application with a new `GET` endpoint where a user can pass a Document ID and receive the processing status from DynamoDB.
+* **Beginner Time Estimate:** 8–12 hours.
+* **The Reality Check:** NoSQL requires a different mindset than traditional relational databases. Designing the right partition key and learning the DynamoDB API commands via the AWS SDK will be the main focus here.
+
+### **Sprint 4: Automation & Deployment (CI/CD)**
+**Goal:** Get it out of localhost. Push the code and watch it deploy automatically.
+* **Tasks:**
+    * Manually provision an AWS Elastic Beanstalk environment (free tier eligible) and deploy the Spring Boot `.jar` file to test it.
+    * Set up a GitHub repository for the project.
+    * Write a GitHub Actions YAML workflow (or AWS CodePipeline).
+    * Configure the pipeline to automatically build the Java project, run any tests, and deploy the new artifact to Elastic Beanstalk every time you push to the `main` branch.
+* **Beginner Time Estimate:** 10–15 hours.
+* **The Reality Check:** CI/CD pipelines often involve a lot of trial and error. You will likely see several "Failed" build badges before getting the YAML syntax and deployment permissions dialed in perfectly.
+
+---
+
+**Total Estimated Hours:** ~40 to 60 hours. If you dedicate 10 hours a week (a couple of hours in the evenings and some weekend time), you will have a highly impressive, corporate-grade portfolio piece completed in roughly one month.
+
+Which part of Sprint 1 would you like to tackle first: scaffolding the Spring Boot application locally, or jumping into the AWS console to set up the S3 bucket and IAM user?
