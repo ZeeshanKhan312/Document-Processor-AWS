@@ -6,6 +6,5 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface DocumentService {
     DocumentUploadResponse uploadDocument(MultipartFile file);
-    DocumentUploadResponse fetchDocument(String documentId);
     DocumentStatusResponse getDocumentStatus(String documentId);
 }

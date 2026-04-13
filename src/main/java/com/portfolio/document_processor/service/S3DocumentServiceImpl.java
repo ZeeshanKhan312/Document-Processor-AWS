@@ -77,10 +77,6 @@ public class S3DocumentServiceImpl implements DocumentService{
 
     }
 
-    @Override
-    public DocumentUploadResponse fetchDocument(String documentId) {
-        return null;
-    }
 
     @Override
     public DocumentStatusResponse getDocumentStatus(String documentId) {
