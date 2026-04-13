@@ -1,5 +1,6 @@
 package com.portfolio.document_processor.controller;
 
+import com.portfolio.document_processor.model.DocumentStatusResponse;
 import com.portfolio.document_processor.model.DocumentUploadResponse;
 import com.portfolio.document_processor.service.DocumentService;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +30,9 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/fetch")
-    public ResponseEntity<DocumentUploadResponse> fetchDocument(@RequestParam("documentId") String documentId){
-        if(documentId.isEmpty()){
-            return ResponseEntity.badRequest()
-                    .body(
-                            new DocumentUploadResponse(null, null, "FAILED", "Document ID is empty.")
-                    );
-        }
-
-        DocumentUploadResponse response = documentService.fetchDocument(documentId);
+    @GetMapping("/{documentId}/status")
+    public ResponseEntity<DocumentStatusResponse> getDocumentStatus(@PathVariable String documentId) {
+        DocumentStatusResponse response = documentService.getDocumentStatus(documentId);
         return ResponseEntity.ok(response);
     }
 }
