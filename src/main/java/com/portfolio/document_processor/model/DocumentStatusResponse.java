@@ -12,5 +12,6 @@ public class DocumentStatusResponse {
     private String fileName;
     private String status;
     private String fileSizeBytes;
-//    private String fileContent;
+    private String fileType;
+    private String processedAt;
 }

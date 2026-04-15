@@ -90,7 +90,7 @@ public class S3DocumentServiceImpl implements DocumentService{
             software.amazon.awssdk.services.dynamodb.model.GetItemResponse response = dynamoDbClient.getItem(request);
             // 3. Check if the item exists in the database
             if (!response.hasItem()) {
-                return new DocumentStatusResponse(documentId, "N/A", "PROCESSING (Or Not Found)", "0");
+                return new DocumentStatusResponse(documentId, "N/A", "PROCESSING (Or Not Found)", "0","N/A","0.00");
             }
             // 4. Map the DynamoDB attributes to our Java object
             java.util.Map<String, software.amazon.awssdk.services.dynamodb.model.AttributeValue> item = response.item();
@@ -98,12 +98,14 @@ public class S3DocumentServiceImpl implements DocumentService{
                     item.get("documentId").s(),
                     item.get("fileName").s(),
                     item.get("status").s(),
-                    item.get("fileSizeBytes").n() // .n() because it's stored as a number
+                    item.get("fileSizeBytes").n(),// .n() because it's stored as a number
+                    item.get("fileType").s(),
+                    item.get("processedAt").s()
             );
 
         } catch (Exception e) {
             e.printStackTrace();
-            return new DocumentStatusResponse(documentId, "ERROR", "Failed to retrieve status", "0");
+            return new DocumentStatusResponse(documentId, "ERROR", "Failed to retrieve status", "0","N/A","0.00");
         }
     }
 }

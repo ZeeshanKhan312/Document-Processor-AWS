@@ -7,8 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
@@ -21,6 +25,8 @@ public class LocalDocumentServiceImpl implements DocumentService{
     public DocumentUploadResponse uploadDocument(MultipartFile file) {
         String documentId= UUID.randomUUID().toString();
         String fileName=file.getOriginalFilename();
+        String fileType=file.getContentType();
+        String processedAt;
 
         try {
             Path uploadPath = Paths.get(UPLOAD_DIR);
@@ -67,17 +73,33 @@ public class LocalDocumentServiceImpl implements DocumentService{
 
                 //Strip the documentID and the underscore from the file name to get the original name
                 String originalFileName=foundFile.getName().substring(documentId.length()+1);
+                
+                String fileType = "application/octet-stream";
+                try {
+                    fileType = Files.probeContentType(foundFile.toPath());
+                    if (fileType == null) {
+                        fileType = "application/octet-stream";
+                    }
+                } catch (java.io.IOException e) {
+                    // Ignore and use default
+                }
+                
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                        .withZone(ZoneId.systemDefault());
+                String processedAt = formatter.format(Instant.ofEpochMilli(foundFile.lastModified()));
 
                 return new DocumentStatusResponse(
                         documentId,
                         originalFileName,
                         "COMPLETED (LOCAL)",
-                        String.valueOf(foundFile.length())
+                        String.valueOf(foundFile.length()),
+                        fileType,
+                        processedAt
                 );
 
             }
         }
         // If the file wasn't found in the local folder
-        return new DocumentStatusResponse(documentId,"N/A","NOT FOUND","0");
+        return new DocumentStatusResponse(documentId,"N/A","NOT FOUND","0","N/A","0:00");
     }
 }
